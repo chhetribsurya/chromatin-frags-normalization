@@ -21,7 +21,6 @@ A chromatin fragment counter and normalization pipeline for counting chromatin f
 - **Chromosome Filtering**: Choose between autosomes only or all chromosomes
 - **Simple Input Format**: Standard BED files and minimal samplesheet requirements
 - **Multiple Output Formats**: Both RDS (R native) and tab-separated text files
-- **No Complex Dependencies**: Focused tool without differential analysis overhead
 
 ## Installation
 
@@ -383,32 +382,13 @@ output/
 
 ## Use Cases
 
-### 1. ATAC-seq Peak Quantification
-```bash
-# Quantify accessibility at tissue-specific peaks
-Rscript chromatin_count_norm_v2.R \
-  --samplesheet atac_samples.tsv \
-  --target-sites tissue_specific_peaks.bed \
-  --reference-sites housekeeping_promoters.bed
-```
-
-### 2. ChIP-seq Signal at Candidate Regions
+### ChIP-seq Signal at Candidate Regions
 ```bash
 # Measure H3K27ac signal at enhancer candidates  
 Rscript chromatin_count_norm_v2.R \
   --samplesheet chip_samples.tsv \
   --target-sites enhancer_candidates.bed \
   --reference-sites active_promoters.bed
-```
-
-### 3. Single Cell ATAC-seq Bulk Profiles
-```bash
-# Generate bulk-like profiles from single cell data
-Rscript chromatin_count_norm_v2.R \
-  --sample-name bulk_celltype_A \
-  --fragment-file celltype_A_fragments.bed \
-  --target-sites marker_peaks.bed \
-  --reference-sites housekeeping_regions.bed
 ```
 
 ## Advanced Usage
@@ -558,15 +538,6 @@ Error: Zero reference counts found for samples: sample_001
 
 - **Default:** Autosomes only (chr1-chr22)
 - **All chromosomes:** Includes sex chromosomes (chrX, chrY) and contigs
-
-## Citation
-
-If you use this tool in your research, please cite:
-
-```
-Chromatin Fragment Counter & Normalizer v2
-GitHub: https://github.com/chhetribsurya/chromatin-analysis-pipeline
-```
 
 ## License
 
