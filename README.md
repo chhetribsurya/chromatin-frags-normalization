@@ -24,6 +24,85 @@ A chromatin fragment counter and normalization pipeline for counting chromatin f
 
 ## Installation
 
+### Option 1: Docker (Recommended)
+
+The easiest way to run the analysis is using Docker, which handles all dependencies automatically.
+
+#### Prerequisites
+- **Docker** (version 20.10 or higher)
+- **Docker Compose** (optional, for easier management)
+
+#### Quick Start with Docker
+
+1. **Clone the repository:**
+```bash
+git clone https://github.com/chhetribsurya/chromatin-frags-normalization.git
+cd chromatin-frags-normalization
+```
+
+2. **Set up directory structure:**
+```bash
+./run_analysis.sh setup
+```
+
+3. **Build Docker image:**
+```bash
+./run_analysis.sh build
+```
+
+4. **Run analysis:**
+```bash
+# Batch mode
+./run_analysis.sh run-batch
+
+# Single sample mode
+./run_analysis.sh run-single --sample-name sample1 --fragment-file /workspace/frags/sample1.bed --target-sites /workspace/input/target_peaks.bed
+```
+
+#### Manual Docker Usage
+
+```bash
+# Build the image
+docker build -t chromatin-frags-normalization .
+
+# Run batch analysis
+docker run --rm \
+  -v $(pwd)/input:/workspace/input:ro \
+  -v $(pwd)/output:/workspace/output \
+  -v $(pwd)/frags:/workspace/frags:ro \
+  chromatin-frags-normalization \
+  --samplesheet /workspace/input/samples.tsv \
+  --target-sites /workspace/input/target_peaks.bed \
+  --frags-dir /workspace/frags \
+  --output-dir /workspace/output \
+  --verbose
+
+# Run single sample analysis
+docker run --rm \
+  -v $(pwd)/input:/workspace/input:ro \
+  -v $(pwd)/output:/workspace/output \
+  -v $(pwd)/frags:/workspace/frags:ro \
+  chromatin-frags-normalization \
+  --sample-name sample1 \
+  --fragment-file /workspace/frags/sample1.bed \
+  --target-sites /workspace/input/target_peaks.bed \
+  --output-dir /workspace/output \
+  --verbose
+```
+
+#### Using Docker Compose
+
+```bash
+# Edit docker-compose.yml to set your analysis parameters
+# Then run:
+docker-compose up
+
+# Or run with custom command:
+docker-compose run chromatin-counter --samplesheet /workspace/input/samples.tsv --target-sites /workspace/input/target_peaks.bed --verbose
+```
+
+### Option 2: Local Installation
+
 ### Prerequisites
 
 - **R (version ≥ 4.0.0)**
@@ -289,7 +368,28 @@ chr3_15000_16000	0.045	0.052	0.038	0.041
 
 ## Usage Examples
 
-### Example 1: Basic Batch Analysis
+### Example 1: Quick Start with Docker
+
+1. **Set up the project:**
+```bash
+git clone https://github.com/chhetribsurya/chromatin-frags-normalization.git
+cd chromatin-frags-normalization
+./run_analysis.sh setup
+```
+
+2. **Copy example data to input directory:**
+```bash
+cp example_data/* input/
+cp -r example_data/frags/* frags/
+```
+
+3. **Run analysis:**
+```bash
+./run_analysis.sh build
+./run_analysis.sh run-batch
+```
+
+### Example 2: Basic Batch Analysis (Local)
 
 Generate raw counts and CPM for multiple samples:
 
@@ -300,11 +400,15 @@ Rscript chromatin_count_norm_v2.R \
   --verbose
 ```
 
-### Example 2: Batch Analysis with Reference Normalization
+### Example 3: Batch Analysis with Reference Normalization
 
 Include housekeeping gene normalization:
 
 ```bash
+# Using Docker
+./run_analysis.sh run-batch --reference-sites /workspace/input/housekeeping_genes.bed --save-intermediate
+
+# Using local R
 Rscript chromatin_count_norm_v2.R \
   --samplesheet samples.tsv \
   --target-sites enhancer_peaks.bed \
@@ -313,11 +417,19 @@ Rscript chromatin_count_norm_v2.R \
   --save-intermediate
 ```
 
-### Example 3: Single Sample Analysis
+### Example 4: Single Sample Analysis
 
 Process one sample without samplesheet:
 
 ```bash
+# Using Docker
+./run_analysis.sh run-single \
+  --sample-name sample005 \
+  --fragment-file /workspace/frags/sample005_fragments.bed \
+  --target-sites /workspace/input/disease_associated_peaks.bed \
+  --reference-sites /workspace/input/dhs_sites.bed
+
+# Using local R
 Rscript chromatin_count_norm_v2.R \
   --sample-name sample005 \
   --fragment-file ./data/sample005_fragments.bed \
@@ -325,11 +437,15 @@ Rscript chromatin_count_norm_v2.R \
   --reference-sites dhs_sites.bed
 ```
 
-### Example 4: Include All Chromosomes
+### Example 5: Include All Chromosomes
 
 Process all chromosomes including sex chromosomes and contigs:
 
 ```bash
+# Using Docker
+./run_analysis.sh run-batch --include-all-chr --verbose
+
+# Using local R
 Rscript chromatin_count_norm_v2.R \
   --samplesheet samples.tsv \
   --target-sites peaks.bed \
@@ -337,11 +453,15 @@ Rscript chromatin_count_norm_v2.R \
   --verbose
 ```
 
-### Example 5: Re-run Analysis with Different Parameters
+### Example 6: Re-run Analysis with Different Parameters
 
 Force regeneration with new parameters:
 
 ```bash
+# Using Docker
+./run_analysis.sh run-batch --reference-sites /workspace/input/new_reference.bed --regenerate-counts --include-all-chr
+
+# Using local R
 Rscript chromatin_count_norm_v2.R \
   --samplesheet samples.tsv \
   --target-sites peaks.bed \
@@ -350,19 +470,45 @@ Rscript chromatin_count_norm_v2.R \
   --include-all-chr
 ```
 
-## Directory Structure
+## Repository Structure
+
+```
+chromatin-frags-normalization/
+├── chromatin_count_norm_v2.R    # Main analysis script
+├── run_analysis.sh              # Convenience script for running analyses
+├── Dockerfile                   # Docker configuration
+├── docker-compose.yml          # Docker Compose configuration
+├── requirements.txt            # R package dependencies
+├── .gitignore                  # Git ignore rules
+├── .dockerignore              # Docker ignore rules
+├── README.md                  # This file
+├── example_data/              # Example input files
+│   ├── samples.tsv
+│   ├── target_peaks.bed
+│   ├── housekeeping_genes.bed
+│   └── frags/
+│       ├── sample001_fragments.bed
+│       ├── sample002_fragments.bed
+│       ├── sample003_fragments.bed
+│       └── sample004_fragments.bed
+├── input/                     # Your input files (created by setup)
+├── output/                    # Analysis results (created by setup)
+├── frags/                     # Fragment files (created by setup)
+└── logs/                      # Log files (created by setup)
+```
 
 ### Input Directory Layout
 ```
-project/
-├── samples.tsv
-├── target_peaks.bed
-├── housekeeping_genes.bed (optional)
-└── frags/
-    ├── sample001_fragments.bed
-    ├── sample002_fragments.bed
-    ├── sample003_fragments.bed
-    └── sample004_fragments.bed
+input/
+├── samples.tsv                # Sample list (batch mode)
+├── target_peaks.bed           # Target regions
+└── housekeeping_genes.bed     # Reference regions (optional)
+
+frags/
+├── sample001_fragments.bed
+├── sample002_fragments.bed
+├── sample003_fragments.bed
+└── sample004_fragments.bed
 ```
 
 ### Output Directory Layout
@@ -380,11 +526,41 @@ output/
     └── analysis_summary.txt
 ```
 
+## Helper Script Usage
+
+The `run_analysis.sh` script provides convenient commands for common tasks:
+
+```bash
+# Show all available commands
+./run_analysis.sh help
+
+# Set up directory structure
+./run_analysis.sh setup
+
+# Build Docker image
+./run_analysis.sh build
+
+# Run batch analysis (requires input files)
+./run_analysis.sh run-batch
+
+# Run single sample analysis
+./run_analysis.sh run-single --sample-name sample1 --fragment-file /workspace/frags/sample1.bed --target-sites /workspace/input/peaks.bed
+
+# Run analysis locally (without Docker)
+./run_analysis.sh run-local --samplesheet samples.tsv --target-sites peaks.bed --verbose
+
+# Clean up Docker resources
+./run_analysis.sh clean
+```
+
 ## Use Cases
 
 ### ChIP-seq Signal at Candidate Regions
 ```bash
-# Measure H3K27ac signal at enhancer candidates  
+# Using Docker
+./run_analysis.sh run-batch --reference-sites /workspace/input/active_promoters.bed
+
+# Using local R
 Rscript chromatin_count_norm_v2.R \
   --samplesheet chip_samples.tsv \
   --target-sites enhancer_candidates.bed \

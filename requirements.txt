@@ -1,0 +1,19 @@
+# R Package Dependencies for Chromatin Fragment Normalization
+# 
+# This file lists the R packages required for the chromatin fragment counter.
+# The script automatically installs these packages, but this file serves as
+# documentation and can be used for manual installation.
+
+# CRAN Packages
+dplyr>=1.0.0
+readr>=2.0.0
+stringr>=1.4.0
+
+# Bioconductor Packages
+# Note: These require BiocManager for installation
+rtracklayer>=1.50.0
+GenomicRanges>=1.40.0
+
+# R Version Requirements
+# R>=4.0.0
+# Bioconductor>=3.14

@@ -1,0 +1,56 @@
+# R specific
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+.Rbuildignore
+
+# Output directories
+output/
+results/
+matrices/
+logs/
+
+# Input data (uncomment if you don't want to track input files)
+# input/
+# frags/
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
+
+# IDE
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Log files
+*.log
+analysis.log
+
+# Large data files
+*.bed
+*.bam
+*.sam
+*.bigwig
+*.bw
+*.bigbed
+*.bb
+
+# R package installation
+packrat/
+renv/

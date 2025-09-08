@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  chromatin-counter:
+    build: .
+    container_name: chromatin-frags-normalization
+    volumes:
+      # Mount input data directory
+      - ./input:/workspace/input:ro
+      # Mount output directory
+      - ./output:/workspace/output
+      # Mount fragment files directory
+      - ./frags:/workspace/frags:ro
+      # Mount current directory for easy access to scripts
+      - .:/workspace/data:ro
+    environment:
+      - R_LIBS_USER=/usr/local/lib/R/site-library
+    # Default command - can be overridden
+    command: ["--help"]
+    # Uncomment the following lines to run a specific analysis
+    # command: [
+    #   "--samplesheet", "/workspace/input/samples.tsv",
+    #   "--target-sites", "/workspace/input/target_peaks.bed",
+    #   "--frags-dir", "/workspace/frags",
+    #   "--output-dir", "/workspace/output",
+    #   "--verbose"
+    # ]
