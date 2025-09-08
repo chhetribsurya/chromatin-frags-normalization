@@ -70,7 +70,7 @@ BiocManager::install(bioc_packages, dependencies = TRUE)
 
 1. **Download the script:**
 ```bash
-wget https://github.com/chhetribsurya/chromatin-analysis-pipeline/tree/main/count_normalization/chromatin_count_norm_v2.R
+wget https://github.com/chhetribsurya/chromatin-frags-normalization/blob/main/chromatin_count_norm_v2.R
 chmod +x chromatin_count_norm_v2.R
 ```
 
