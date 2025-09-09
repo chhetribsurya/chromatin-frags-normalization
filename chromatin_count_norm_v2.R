@@ -410,7 +410,7 @@ find_fragment_files <- function(sample_names, frags_dir, verbose = FALSE) {
 }
 
 #' Read BED file and create GRanges object
-read_bed_file <- function(bed_file, file_type = "sites", include_all_chr = FALSE, verbose = FALSE) {
+read_bed_file <- function(bed_file, file_type = "sites", verbose = FALSE) {
     log_message(paste("=== Reading", file_type, "BED file ==="), verbose)
     log_message(paste("File:", bed_file), verbose)
     
@@ -456,17 +456,10 @@ read_bed_file <- function(bed_file, file_type = "sites", include_all_chr = FALSE
     # Apply chromosome filtering to target/reference sites as well
     # This ensures consistency with fragment filtering
     if (file_type == "target sites" || file_type == "reference sites") {
-        if (include_all_chr) {
-            # Standard chromosomes only (chr1-chr22, chrX, chrY, chrM)
-            standard_chr <- c(paste0("chr", 1:22), "chrX", "chrY", "chrM")
-            site_ranges <- subset(site_ranges, seqnames %in% standard_chr)
-            log_message(paste("  Filtered to", length(site_ranges), "sites on standard chromosomes (chr1-chr22, chrX, chrY, chrM)"), verbose)
-        } else {
-            # Autosomal chromosomes only (chr1-chr22)
-            autosomal_chr <- paste0("chr", 1:22)
-            site_ranges <- subset(site_ranges, seqnames %in% autosomal_chr)
-            log_message(paste("  Filtered to", length(site_ranges), "sites on autosomal chromosomes (chr1-chr22)"), verbose)
-        }
+        # Keep only standard chromosomes for consistency
+        standard_chr <- c(paste0("chr", 1:22), "chrX", "chrY", "chrM")
+        site_ranges <- subset(site_ranges, seqnames %in% standard_chr)
+        log_message(paste("  Filtered to", length(site_ranges), "sites on standard chromosomes"), verbose)
     }
     
     return(site_ranges)
@@ -733,12 +726,12 @@ main_analysis_pipeline <- function() {
     }
     
     # Read target sites BED file
-    target_sites <- read_bed_file(params$target_sites, "target sites", params$include_all_chr, verbose_logging)
+    target_sites <- read_bed_file(params$target_sites, "target sites", verbose_logging)
     
     # Read reference sites BED file (if provided)
     reference_sites <- NULL
     if (!is.null(params$reference_sites)) {
-        reference_sites <- read_bed_file(params$reference_sites, "reference sites", params$include_all_chr, verbose_logging)
+        reference_sites <- read_bed_file(params$reference_sites, "reference sites", verbose_logging)
     }
     
     cat("\n")

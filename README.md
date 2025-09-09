@@ -77,6 +77,19 @@ docker run --rm \
   --output-dir /workspace/output \
   --verbose
 
+# Run batch analysis with reference site normalization
+docker run --rm \
+  -v $(pwd)/input:/workspace/input:ro \
+  -v $(pwd)/output:/workspace/output \
+  -v $(pwd)/frags:/workspace/frags:ro \
+  chromatin-frags-normalization \
+  --samplesheet /workspace/input/samples.tsv \
+  --target-sites /workspace/input/target_peaks.bed \
+  --reference-sites /workspace/input/housekeeping_genes.bed \
+  --frags-dir /workspace/frags \
+  --output-dir /workspace/output \
+  --verbose
+
 # Run single sample analysis
 docker run --rm \
   -v $(pwd)/input:/workspace/input:ro \
@@ -87,6 +100,132 @@ docker run --rm \
   --fragment-file /workspace/frags/sample1.bed \
   --target-sites /workspace/input/target_peaks.bed \
   --output-dir /workspace/output \
+  --verbose
+
+# Run single sample analysis with reference site normalization
+docker run --rm \
+  -v $(pwd)/input:/workspace/input:ro \
+  -v $(pwd)/output:/workspace/output \
+  -v $(pwd)/frags:/workspace/frags:ro \
+  chromatin-frags-normalization \
+  --sample-name sample1 \
+  --fragment-file /workspace/frags/sample1.bed \
+  --target-sites /workspace/input/target_peaks.bed \
+  --reference-sites /workspace/input/housekeeping_genes.bed \
+  --output-dir /workspace/output \
+  --verbose
+
+# Run analysis with all chromosomes
+docker run --rm \
+  -v $(pwd)/input:/workspace/input:ro \
+  -v $(pwd)/output:/workspace/output \
+  -v $(pwd)/frags:/workspace/frags:ro \
+  chromatin-frags-normalization \
+  --samplesheet /workspace/input/samples.tsv \
+  --target-sites /workspace/input/target_peaks.bed \
+  --reference-sites /workspace/input/housekeeping_genes.bed \
+  --frags-dir /workspace/frags \
+  --output-dir /workspace/output \
+  --include-all-chr \
+  --verbose
+```
+
+#### Using Helper Script for Docker Execution
+
+The helper script provides convenient Docker commands with full parameter specification:
+
+```bash
+# Set script path and variables
+SCRIPT_BASH="./run_analysis.sh"
+SAMPLESHEET="input/samples.tsv"
+FRAGS_DIR="frags"
+TARGET_SITES="input/target_peaks.bed"
+REFERENCE_SITES="input/housekeeping_genes.bed"
+OUT_DIR_BATCH_AUTO="output/batch_auto"
+OUT_DIR_BATCH_AUTO_WITHOUTREF="output/batch_auto_withoutref"
+OUT_DIR_SINGLE_AUTO="output/single_auto"
+OUT_DIR_SINGLE_AUTO_WITHOUTREF="output/single_auto_withoutref"
+SAMPLE_NAME="sample001"
+FRAG_FILE="frags/sample001.bed"
+
+# Batch Analysis Commands (Docker)
+
+# Basic batch analysis (Docker)
+bash $SCRIPT_BASH \
+  run-batch \
+  --samplesheet "$SAMPLESHEET" \
+  --frags-dir "$FRAGS_DIR" \
+  --target-sites "$TARGET_SITES" \
+  --output-dir "$OUT_DIR_BATCH_AUTO" \
+  --verbose
+
+# Batch analysis with reference site normalization (Docker)
+bash $SCRIPT_BASH \
+  run-batch-with-ref \
+  --samplesheet "$SAMPLESHEET" \
+  --frags-dir "$FRAGS_DIR" \
+  --target-sites "$TARGET_SITES" \
+  --reference-sites "$REFERENCE_SITES" \
+  --output-dir "$OUT_DIR_BATCH_AUTO" \
+  --verbose
+
+# Batch analysis without reference site normalization (Docker)
+bash $SCRIPT_BASH \
+  run-batch-without-ref \
+  --samplesheet "$SAMPLESHEET" \
+  --frags-dir "$FRAGS_DIR" \
+  --target-sites "$TARGET_SITES" \
+  --output-dir "$OUT_DIR_BATCH_AUTO_WITHOUTREF" \
+  --verbose
+
+# Batch analysis including all chromosomes (Docker)
+bash $SCRIPT_BASH \
+  run-batch-all-chr \
+  --samplesheet "$SAMPLESHEET" \
+  --frags-dir "$FRAGS_DIR" \
+  --target-sites "$TARGET_SITES" \
+  --reference-sites "$REFERENCE_SITES" \
+  --output-dir "$OUT_DIR_BATCH_AUTO" \
+  --verbose
+
+# Single Sample Analysis Commands (Docker)
+
+# Basic single sample analysis (Docker)
+bash $SCRIPT_BASH \
+  run-single \
+  --sample-name "$SAMPLE_NAME" \
+  --fragment-file "$FRAG_FILE" \
+  --target-sites "$TARGET_SITES" \
+  --output-dir "$OUT_DIR_SINGLE_AUTO" \
+  --verbose
+
+# Single sample with reference site normalization (Docker)
+bash $SCRIPT_BASH \
+  run-single-with-ref \
+  --sample-name "$SAMPLE_NAME" \
+  --fragment-file "$FRAG_FILE" \
+  --target-sites "$TARGET_SITES" \
+  --reference-sites "$REFERENCE_SITES" \
+  --output-dir "$OUT_DIR_SINGLE_AUTO" \
+  --verbose
+
+# Single sample without reference site normalization (Docker)
+bash $SCRIPT_BASH \
+  run-single-without-ref \
+  --sample-name "$SAMPLE_NAME" \
+  --fragment-file "$FRAG_FILE" \
+  --target-sites "$TARGET_SITES" \
+  --output-dir "$OUT_DIR_SINGLE_AUTO_WITHOUTREF" \
+  --verbose
+
+# Single sample including all chromosomes (Docker)
+bash $SCRIPT_BASH \
+  run-single-all-chr \
+  --sample-name "$SAMPLE_NAME" \
+  --fragment-file "$FRAG_FILE" \
+  --target-sites "$TARGET_SITES" \
+  --reference-sites "$REFERENCE_SITES" \
+  --output-dir "$OUT_DIR_SINGLE_AUTO" \
   --verbose
 ```
 
@@ -101,9 +240,194 @@ docker-compose up
 docker-compose run chromatin-counter --samplesheet /workspace/input/samples.tsv --target-sites /workspace/input/target_peaks.bed --verbose
 ```
 
-### Option 2: Local Installation
+### Option 2: Local Installation (No Docker Required)
 
-### Prerequisites
+Run the analysis directly on your system without Docker containers.
+
+#### Prerequisites
+
+- **R (version ≥ 4.0.0)**
+- **Bioconductor** (for genomic analysis packages)
+
+#### Quick Start with Local Installation
+
+1. **Clone the repository:**
+```bash
+git clone https://github.com/chhetribsurya/chromatin-frags-normalization.git
+cd chromatin-frags-normalization
+```
+
+2. **Set up directory structure:**
+```bash
+./run_analysis.sh setup
+```
+
+3. **Verify R installation:**
+```bash
+./run_analysis.sh validate
+```
+
+4. **Run analysis:**
+```bash
+# Batch mode (local)
+./run_analysis.sh run-batch-local
+
+# Single sample mode (local)
+./run_analysis.sh run-single-local --sample-name sample1 --fragment-file frags/sample1.bed --target-sites input/peaks.bed
+```
+
+#### Manual Local Usage
+
+Run the R script directly without the helper script:
+
+```bash
+# Run batch analysis
+Rscript chromatin_count_norm_v2.R \
+  --samplesheet input/samples.tsv \
+  --target-sites input/target_peaks.bed \
+  --frags-dir frags \
+  --output-dir output \
+  --verbose
+
+# Run batch analysis with reference site normalization
+Rscript chromatin_count_norm_v2.R \
+  --samplesheet input/samples.tsv \
+  --target-sites input/target_peaks.bed \
+  --reference-sites input/housekeeping_genes.bed \
+  --frags-dir frags \
+  --output-dir output \
+  --verbose
+
+# Run single sample analysis
+Rscript chromatin_count_norm_v2.R \
+  --sample-name sample1 \
+  --fragment-file frags/sample1.bed \
+  --target-sites input/target_peaks.bed \
+  --output-dir output \
+  --verbose
+
+# Run single sample analysis with reference site normalization
+Rscript chromatin_count_norm_v2.R \
+  --sample-name sample1 \
+  --fragment-file frags/sample1.bed \
+  --target-sites input/target_peaks.bed \
+  --reference-sites input/housekeeping_genes.bed \
+  --output-dir output \
+  --verbose
+
+# Run analysis with all chromosomes
+Rscript chromatin_count_norm_v2.R \
+  --samplesheet input/samples.tsv \
+  --target-sites input/target_peaks.bed \
+  --reference-sites input/housekeeping_genes.bed \
+  --frags-dir frags \
+  --output-dir output \
+  --include-all-chr \
+  --verbose
+```
+
+#### Using Helper Script for Local Execution
+
+The helper script provides convenient local commands with full parameter specification:
+
+```bash
+# Set script path and variables
+SCRIPT_BASH="./run_analysis.sh"
+SAMPLESHEET="input/samples.tsv"
+FRAGS_DIR="frags"
+TARGET_SITES="input/target_peaks.bed"
+REFERENCE_SITES="input/housekeeping_genes.bed"
+OUT_DIR_BATCH_AUTO="output/batch_auto"
+OUT_DIR_BATCH_AUTO_WITHOUTREF="output/batch_auto_withoutref"
+OUT_DIR_SINGLE_AUTO="output/single_auto"
+OUT_DIR_SINGLE_AUTO_WITHOUTREF="output/single_auto_withoutref"
+SAMPLE_NAME="sample001"
+FRAG_FILE="frags/sample001.bed"
+
+# Batch Analysis Commands (Local)
+
+# Basic batch analysis (local)
+bash $SCRIPT_BASH \
+  run-batch-local \
+  --samplesheet "$SAMPLESHEET" \
+  --frags-dir "$FRAGS_DIR" \
+  --target-sites "$TARGET_SITES" \
+  --output-dir "$OUT_DIR_BATCH_AUTO" \
+  --verbose
+
+# Batch analysis with reference site normalization (local)
+bash $SCRIPT_BASH \
+  run-batch-local-with-ref \
+  --samplesheet "$SAMPLESHEET" \
+  --frags-dir "$FRAGS_DIR" \
+  --target-sites "$TARGET_SITES" \
+  --reference-sites "$REFERENCE_SITES" \
+  --output-dir "$OUT_DIR_BATCH_AUTO" \
+  --verbose
+
+# Batch analysis without reference site normalization (local)
+bash $SCRIPT_BASH \
+  run-batch-local-without-ref \
+  --samplesheet "$SAMPLESHEET" \
+  --frags-dir "$FRAGS_DIR" \
+  --target-sites "$TARGET_SITES" \
+  --output-dir "$OUT_DIR_BATCH_AUTO_WITHOUTREF" \
+  --verbose
+
+# Batch analysis including all chromosomes (local)
+bash $SCRIPT_BASH \
+  run-batch-local-all-chr \
+  --samplesheet "$SAMPLESHEET" \
+  --frags-dir "$FRAGS_DIR" \
+  --target-sites "$TARGET_SITES" \
+  --reference-sites "$REFERENCE_SITES" \
+  --output-dir "$OUT_DIR_BATCH_AUTO" \
+  --verbose
+
+# Single Sample Analysis Commands (Local)
+
+# Basic single sample analysis (local)
+bash $SCRIPT_BASH \
+  run-single-local \
+  --sample-name "$SAMPLE_NAME" \
+  --fragment-file "$FRAG_FILE" \
+  --target-sites "$TARGET_SITES" \
+  --output-dir "$OUT_DIR_SINGLE_AUTO" \
+  --verbose
+
+# Single sample with reference site normalization (local)
+bash $SCRIPT_BASH \
+  run-single-local-with-ref \
+  --sample-name "$SAMPLE_NAME" \
+  --fragment-file "$FRAG_FILE" \
+  --target-sites "$TARGET_SITES" \
+  --reference-sites "$REFERENCE_SITES" \
+  --output-dir "$OUT_DIR_SINGLE_AUTO" \
+  --verbose
+
+# Single sample without reference site normalization (local)
+bash $SCRIPT_BASH \
+  run-single-local-without-ref \
+  --sample-name "$SAMPLE_NAME" \
+  --fragment-file "$FRAG_FILE" \
+  --target-sites "$TARGET_SITES" \
+  --output-dir "$OUT_DIR_SINGLE_AUTO_WITHOUTREF" \
+  --verbose
+
+# Single sample including all chromosomes (local)
+bash $SCRIPT_BASH \
+  run-single-local-all-chr \
+  --sample-name "$SAMPLE_NAME" \
+  --fragment-file "$FRAG_FILE" \
+  --target-sites "$TARGET_SITES" \
+  --reference-sites "$REFERENCE_SITES" \
+  --output-dir "$OUT_DIR_SINGLE_AUTO" \
+  --verbose
+```
+
+### Option 3: Local Installation (Detailed Setup)
+
+#### Prerequisites
 
 - **R (version ≥ 4.0.0)**
 - **Bioconductor** (for genomic analysis packages)
@@ -394,6 +718,10 @@ cp -r example_data/frags/* frags/
 Generate raw counts and CPM for multiple samples:
 
 ```bash
+# Using helper script (local)
+./run_analysis.sh run-batch-local --verbose
+
+# Using R directly
 Rscript chromatin_count_norm_v2.R \
   --samplesheet samples.tsv \
   --target-sites enhancer_peaks.bed \
@@ -406,7 +734,10 @@ Include housekeeping gene normalization:
 
 ```bash
 # Using Docker
-./run_analysis.sh run-batch --reference-sites /workspace/input/housekeeping_genes.bed --save-intermediate
+./run_analysis.sh run-batch-with-ref --save-intermediate
+
+# Using local helper script
+./run_analysis.sh run-batch-local-with-ref --save-intermediate
 
 # Using local R
 Rscript chromatin_count_norm_v2.R \
@@ -423,11 +754,18 @@ Process one sample without samplesheet:
 
 ```bash
 # Using Docker
-./run_analysis.sh run-single \
+./run_analysis.sh run-single-with-ref \
   --sample-name sample005 \
-  --fragment-file /workspace/frags/sample005_fragments.bed \
-  --target-sites /workspace/input/disease_associated_peaks.bed \
-  --reference-sites /workspace/input/dhs_sites.bed
+  --fragment-file frags/sample005_fragments.bed \
+  --target-sites input/disease_associated_peaks.bed \
+  --reference-sites input/dhs_sites.bed
+
+# Using local helper script
+./run_analysis.sh run-single-local-with-ref \
+  --sample-name sample005 \
+  --fragment-file frags/sample005_fragments.bed \
+  --target-sites input/disease_associated_peaks.bed \
+  --reference-sites input/dhs_sites.bed
 
 # Using local R
 Rscript chromatin_count_norm_v2.R \
@@ -443,7 +781,10 @@ Process all chromosomes including sex chromosomes and contigs:
 
 ```bash
 # Using Docker
-./run_analysis.sh run-batch --include-all-chr --verbose
+./run_analysis.sh run-batch-all-chr --verbose
+
+# Using local helper script
+./run_analysis.sh run-batch-local-all-chr --verbose
 
 # Using local R
 Rscript chromatin_count_norm_v2.R \
@@ -459,7 +800,10 @@ Force regeneration with new parameters:
 
 ```bash
 # Using Docker
-./run_analysis.sh run-batch --reference-sites /workspace/input/new_reference.bed --regenerate-counts --include-all-chr
+./run_analysis.sh run-batch-with-ref --regenerate-counts --include-all-chr
+
+# Using local helper script
+./run_analysis.sh run-batch-local-with-ref --regenerate-counts --include-all-chr
 
 # Using local R
 Rscript chromatin_count_norm_v2.R \
@@ -468,6 +812,22 @@ Rscript chromatin_count_norm_v2.R \
   --reference-sites new_reference.bed \
   --regenerate-counts \
   --include-all-chr
+```
+
+### Example 7: Environment Variable Usage
+
+Simplify commands using environment variables:
+
+```bash
+# Set environment variables
+export SAMPLESHEET="my_samples.tsv"
+export TARGET_SITES="my_peaks.bed"
+export REFERENCE_SITES="my_ref_sites.bed"
+export OUTPUT_DIR="my_results"
+
+# Run with simplified commands
+./run_analysis.sh run-batch-local-with-ref --verbose
+./run_analysis.sh run-single-local-with-ref --sample-name sample001 --fragment-file frags/sample001.bed
 ```
 
 ## Repository Structure
@@ -528,11 +888,16 @@ output/
 
 ## Helper Script Usage
 
-The `run_analysis.sh` script provides convenient commands for common tasks:
+The `run_analysis.sh` script provides comprehensive commands for both Docker and local execution:
+
+### Available Commands
 
 ```bash
 # Show all available commands
 ./run_analysis.sh help
+
+# Show comprehensive examples
+./run_analysis.sh examples
 
 # Set up directory structure
 ./run_analysis.sh setup
@@ -540,17 +905,103 @@ The `run_analysis.sh` script provides convenient commands for common tasks:
 # Build Docker image
 ./run_analysis.sh build
 
-# Run batch analysis (requires input files)
-./run_analysis.sh run-batch
-
-# Run single sample analysis
-./run_analysis.sh run-single --sample-name sample1 --fragment-file /workspace/frags/sample1.bed --target-sites /workspace/input/peaks.bed
-
-# Run analysis locally (without Docker)
-./run_analysis.sh run-local --samplesheet samples.tsv --target-sites peaks.bed --verbose
+# Validate input files and configuration
+./run_analysis.sh validate
 
 # Clean up Docker resources
 ./run_analysis.sh clean
+```
+
+### Batch Analysis Commands
+
+#### Docker Commands (Requires Docker)
+```bash
+# Basic batch analysis
+./run_analysis.sh run-batch
+
+# With reference site normalization
+./run_analysis.sh run-batch-with-ref
+
+# Without reference site normalization
+./run_analysis.sh run-batch-without-ref
+
+# Including all chromosomes
+./run_analysis.sh run-batch-all-chr
+```
+
+#### Local Commands (No Docker Required)
+```bash
+# Basic batch analysis (local)
+./run_analysis.sh run-batch-local
+
+# With reference site normalization (local)
+./run_analysis.sh run-batch-local-with-ref
+
+# Without reference site normalization (local)
+./run_analysis.sh run-batch-local-without-ref
+
+# Including all chromosomes (local)
+./run_analysis.sh run-batch-local-all-chr
+```
+
+### Single Sample Analysis Commands
+
+#### Docker Commands (Requires Docker)
+```bash
+# Basic single sample analysis
+./run_analysis.sh run-single --sample-name sample1 --fragment-file frags/sample1.bed --target-sites input/peaks.bed
+
+# With reference site normalization
+./run_analysis.sh run-single-with-ref --sample-name sample1 --fragment-file frags/sample1.bed --target-sites input/peaks.bed
+
+# Without reference site normalization
+./run_analysis.sh run-single-without-ref --sample-name sample1 --fragment-file frags/sample1.bed --target-sites input/peaks.bed
+
+# Including all chromosomes
+./run_analysis.sh run-single-all-chr --sample-name sample1 --fragment-file frags/sample1.bed --target-sites input/peaks.bed
+```
+
+#### Local Commands (No Docker Required)
+```bash
+# Basic single sample analysis (local)
+./run_analysis.sh run-single-local --sample-name sample1 --fragment-file frags/sample1.bed --target-sites input/peaks.bed
+
+# With reference site normalization (local)
+./run_analysis.sh run-single-local-with-ref --sample-name sample1 --fragment-file frags/sample1.bed --target-sites input/peaks.bed
+
+# Without reference site normalization (local)
+./run_analysis.sh run-single-local-without-ref --sample-name sample1 --fragment-file frags/sample1.bed --target-sites input/peaks.bed
+
+# Including all chromosomes (local)
+./run_analysis.sh run-single-local-all-chr --sample-name sample1 --fragment-file frags/sample1.bed --target-sites input/peaks.bed
+```
+
+### Advanced Commands
+
+```bash
+# Run with custom parameters (pass through to R script)
+./run_analysis.sh run-custom --samplesheet my_samples.tsv --target-sites my_peaks.bed --reference-sites my_ref.bed --verbose
+
+# Run analysis locally with custom parameters
+./run_analysis.sh run-local --samplesheet samples.tsv --target-sites peaks.bed --verbose
+```
+
+### Environment Variable Support
+
+You can set environment variables to simplify command usage:
+
+```bash
+# Set environment variables
+export SAMPLESHEET="my_samples.tsv"
+export TARGET_SITES="my_peaks.bed"
+export REFERENCE_SITES="my_ref_sites.bed"
+export OUTPUT_DIR="my_results"
+export SAMPLE_NAME="sample001"
+export FRAGMENT_FILE="frags/sample001.bed"
+
+# Then run with simplified commands
+./run_analysis.sh run-batch-local-with-ref --verbose
+./run_analysis.sh run-single-local-with-ref --verbose
 ```
 
 ## Use Cases
@@ -650,7 +1101,15 @@ print(raw_counts.sum(axis=0))
 
 ### Common Issues
 
-**1. Fragment files not found:**
+**1. Docker command not found:**
+```
+Error: docker: command not found
+```
+- Install Docker or use local commands instead
+- Use `./run_analysis.sh run-batch-local` instead of `./run_analysis.sh run-batch`
+- Use `./run_analysis.sh run-single-local` instead of `./run_analysis.sh run-single`
+
+**2. Fragment files not found:**
 ```
 Error: Missing fragment files for samples: sample_001
 ```
@@ -658,7 +1117,7 @@ Error: Missing fragment files for samples: sample_001
 - Verify `--frags-dir` path
 - Ensure files have `.bed` extension
 
-**2. Empty count matrices:**
+**3. Empty count matrices:**
 ```
 Warning: No overlaps found for sample: sample_001
 ```
@@ -666,7 +1125,7 @@ Warning: No overlaps found for sample: sample_001
 - Check coordinate systems (0-based vs 1-based)
 - Try `--include-all-chr` flag
 
-**3. Memory issues with large datasets:**
+**4. Memory issues with large datasets:**
 ```
 Error: Cannot allocate vector of size X
 ```
@@ -674,13 +1133,21 @@ Error: Cannot allocate vector of size X
 - Use single sample mode for very large datasets
 - Increase system memory or use computing cluster
 
-**4. Reference normalization fails:**
+**5. Reference normalization fails:**
 ```
 Error: Zero reference counts found for samples: sample_001
 ```
 - Check reference sites overlap with fragments
 - Verify reference BED file format
 - Consider different reference regions
+
+**6. R or Rscript not found (local execution):**
+```
+Error: Rscript not found
+```
+- Install R (version 4.0.0 or higher)
+- Use Docker commands instead: `./run_analysis.sh run-batch`
+- Add R to your system PATH
 
 ### Debugging Tips
 
@@ -721,6 +1188,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Version History
 
+- **v2.1:** Added comprehensive local execution support, environment variable support, enhanced helper script with Docker and local commands, improved error handling and validation
 - **v2.0:** Added single sample mode, flexible chromosome filtering, simplified input requirements
 - **v1.0:** Initial batch processing implementation
 

@@ -399,9 +399,6 @@ run_local() {
         exit 1
     fi
     
-    # Debug: Print the actual command being executed
-    echo "Debug: Executing: Rscript $SCRIPT $*"
-    
     Rscript "$SCRIPT" "$@"
 }
 
@@ -469,7 +466,7 @@ run_batch_local() {
 
 # Function to run batch analysis locally with reference sites
 run_batch_local_with_ref() {
-    print_header "Running batch analysis locally with reference site normalization (AUTOSOMES ONLY)..."
+    print_header "Running batch analysis locally with reference site normalization..."
     
     local samplesheet="${SAMPLESHEET:-$DEFAULT_SAMPLESHEET}"
     local frags_dir="${FRAGS_DIR:-$DEFAULT_FRAGS_DIR}"
@@ -493,9 +490,6 @@ run_batch_local_with_ref() {
         exit 1
     fi
     
-    # Explicitly run in autosomes mode (chr1-chr22 only)
-    print_status "Running in AUTOSOMES MODE - only chr1-chr22 will be processed"
-    
     run_local \
         --samplesheet "$samplesheet" \
         --frags-dir "$frags_dir" \
@@ -510,7 +504,7 @@ run_batch_local_with_ref() {
 
 # Function to run batch analysis locally without reference sites
 run_batch_local_without_ref() {
-    print_header "Running batch analysis locally without reference site normalization (AUTOSOMES ONLY)..."
+    print_header "Running batch analysis locally without reference site normalization..."
     
     local samplesheet="${SAMPLESHEET:-$DEFAULT_SAMPLESHEET}"
     local frags_dir="${FRAGS_DIR:-$DEFAULT_FRAGS_DIR}"
@@ -528,9 +522,6 @@ run_batch_local_without_ref() {
         exit 1
     fi
     
-    # Explicitly run in autosomes mode (chr1-chr22 only)
-    print_status "Running in AUTOSOMES MODE - only chr1-chr22 will be processed"
-    
     run_local \
         --samplesheet "$samplesheet" \
         --frags-dir "$frags_dir" \
@@ -544,7 +535,7 @@ run_batch_local_without_ref() {
 
 # Function to run batch analysis locally with all chromosomes
 run_batch_local_all_chr() {
-    print_header "Running batch analysis locally including all chromosomes (chr1-chr22, chrX, chrY, chrM)..."
+    print_header "Running batch analysis locally including all chromosomes..."
     
     local samplesheet="${SAMPLESHEET:-$DEFAULT_SAMPLESHEET}"
     local frags_dir="${FRAGS_DIR:-$DEFAULT_FRAGS_DIR}"
@@ -562,9 +553,6 @@ run_batch_local_all_chr() {
         print_error "Target sites not found: $target_sites"
         exit 1
     fi
-    
-    # Explicitly run in all chromosomes mode (chr1-chr22, chrX, chrY, chrM)
-    print_status "Running in ALL CHROMOSOMES MODE - chr1-chr22, chrX, chrY, chrM will be processed"
     
     run_local \
         --samplesheet "$samplesheet" \
