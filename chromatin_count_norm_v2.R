@@ -453,6 +453,15 @@ read_bed_file <- function(bed_file, file_type = "sites", verbose = FALSE) {
     # Set proper names using site_id
     names(site_ranges) <- bed_data$site_id
     
+    # Apply chromosome filtering to target/reference sites as well
+    # This ensures consistency with fragment filtering
+    if (file_type == "target sites" || file_type == "reference sites") {
+        # Keep only standard chromosomes for consistency
+        standard_chr <- c(paste0("chr", 1:22), "chrX", "chrY", "chrM")
+        site_ranges <- subset(site_ranges, seqnames %in% standard_chr)
+        log_message(paste("  Filtered to", length(site_ranges), "sites on standard chromosomes"), verbose)
+    }
+    
     return(site_ranges)
 }
 
@@ -484,6 +493,26 @@ save_matrix_formats <- function(matrix_data, base_filename, output_dir, save_int
     }
 }
 
+#' Import BED file with proper chromosome filtering and warning suppression
+import_bed_with_filtering <- function(bed_file, include_all_chr = FALSE, verbose = FALSE) {
+    # Import with warning suppression
+    suppressWarnings({
+        ranges <- import(bed_file, format = 'bed')
+    })
+    
+    # Apply chromosome filtering
+    if (include_all_chr) {
+        # Standard chromosomes only (chr1-chr22, chrX, chrY, chrM)
+        standard_chr <- c(paste0("chr", 1:22), "chrX", "chrY", "chrM")
+        ranges <- subset(ranges, seqnames %in% standard_chr)
+    } else {
+        # Autosomal chromosomes only (chr1-chr22)
+        ranges <- subset(ranges, seqnames %in% paste0("chr", 1:22))
+    }
+    
+    return(ranges)
+}
+
 #' Count fragments at specified sites
 count_fragments_at_sites <- function(site_ranges, fragment_files, output_dir, 
                                     matrix_name, include_all_chr = FALSE, regenerate = FALSE, 
@@ -508,13 +537,11 @@ count_fragments_at_sites <- function(site_ranges, fragment_files, output_dir,
     colnames(fragment_count_matrix) <- sample_names
     rownames(fragment_count_matrix) <- names(site_ranges)
     
-    # Define chromosome filter
+    # Log chromosome filtering mode
     if (include_all_chr) {
-        log_message("Using all chromosomes", verbose)
-        chromosome_filter <- function(ranges) ranges  # No filtering
+        log_message("Using standard chromosomes (chr1-chr22, chrX, chrY, chrM)", verbose)
     } else {
         log_message("Using autosomal chromosomes only (chr1-chr22)", verbose)
-        chromosome_filter <- function(ranges) subset(ranges, seqnames %in% paste0("chr", 1:22))
     }
     
     # Process each fragment file
@@ -525,13 +552,8 @@ count_fragments_at_sites <- function(site_ranges, fragment_files, output_dir,
         log_message(paste('Processing sample', i, 'of', length(sample_names), ':', sample_name), verbose)
         
         tryCatch({
-            # Import fragment file
-            fragment_ranges <- import(current_file, format = 'bed')
-            
-            log_message(paste("  Read", length(fragment_ranges), "fragments"), verbose)
-            
-            # Apply chromosome filter
-            fragment_ranges <- chromosome_filter(fragment_ranges)
+            # Import fragment file with proper filtering and warning suppression
+            fragment_ranges <- import_bed_with_filtering(current_file, include_all_chr, verbose)
             
             log_message(paste("  Retained", length(fragment_ranges), "fragments after chromosome filtering"), verbose)
             
@@ -643,9 +665,6 @@ generate_summary <- function(target_sites, reference_sites, sample_names, output
         "MATRIX DIMENSIONS:",
         paste("- Rows (sites):", length(target_sites)),
         paste("- Columns (samples):", length(sample_names)),
-        "",
-        ifelse(!is.null(reference_sites), 
-               "- Reference normalized: Raw counts / total reference site counts per sample", ""),
         "",
         "=============================================================================",
         "Analysis completed successfully!",
