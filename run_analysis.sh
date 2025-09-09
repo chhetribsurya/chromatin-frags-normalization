@@ -84,19 +84,29 @@ COMMANDS:
   build                   Build Docker image
   clean                   Clean up Docker containers and images
   
-  # Batch Analysis Commands
+  # Batch Analysis Commands (Docker)
   run-batch               Run batch analysis with Docker
-  run-batch-local         Run batch analysis locally (without Docker)
-  run-batch-with-ref      Run batch analysis with reference site normalization
-  run-batch-without-ref   Run batch analysis without reference site normalization
-  run-batch-all-chr       Run batch analysis including all chromosomes
+  run-batch-with-ref      Run batch analysis with reference site normalization (Docker)
+  run-batch-without-ref   Run batch analysis without reference site normalization (Docker)
+  run-batch-all-chr       Run batch analysis including all chromosomes (Docker)
   
-  # Single Sample Analysis Commands  
+  # Batch Analysis Commands (Local)
+  run-batch-local         Run batch analysis locally (without Docker)
+  run-batch-local-with-ref      Run batch analysis with reference site normalization (Local)
+  run-batch-local-without-ref   Run batch analysis without reference site normalization (Local)
+  run-batch-local-all-chr       Run batch analysis including all chromosomes (Local)
+  
+  # Single Sample Analysis Commands (Docker)
   run-single              Run single sample analysis with Docker
+  run-single-with-ref     Run single sample analysis with reference normalization (Docker)
+  run-single-without-ref  Run single sample analysis without reference normalization (Docker)
+  run-single-all-chr      Run single sample analysis including all chromosomes (Docker)
+  
+  # Single Sample Analysis Commands (Local)
   run-single-local        Run single sample analysis locally (without Docker)
-  run-single-with-ref     Run single sample analysis with reference normalization
-  run-single-without-ref  Run single sample analysis without reference normalization
-  run-single-all-chr      Run single sample analysis including all chromosomes
+  run-single-local-with-ref     Run single sample analysis with reference normalization (Local)
+  run-single-local-without-ref  Run single sample analysis without reference normalization (Local)
+  run-single-local-all-chr      Run single sample analysis including all chromosomes (Local)
   
   # Advanced Commands
   run-custom              Run with custom parameters (pass through to R script)
@@ -454,6 +464,109 @@ run_batch_local() {
     print_success "Batch analysis completed"
 }
 
+# Function to run batch analysis locally with reference sites
+run_batch_local_with_ref() {
+    print_header "Running batch analysis locally with reference site normalization..."
+    
+    local samplesheet="${SAMPLESHEET:-$DEFAULT_SAMPLESHEET}"
+    local frags_dir="${FRAGS_DIR:-$DEFAULT_FRAGS_DIR}"
+    local target_sites="${TARGET_SITES:-$DEFAULT_TARGET_SITES}"
+    local reference_sites="${REFERENCE_SITES:-$DEFAULT_REFERENCE_SITES}"
+    local output_dir="${OUTPUT_DIR:-$DEFAULT_OUTPUT_DIR}"
+    
+    # Check required files
+    if [ ! -f "$samplesheet" ]; then
+        print_error "Samplesheet not found: $samplesheet"
+        exit 1
+    fi
+    
+    if [ ! -f "$target_sites" ]; then
+        print_error "Target sites not found: $target_sites"
+        exit 1
+    fi
+    
+    if [ ! -f "$reference_sites" ]; then
+        print_error "Reference sites not found: $reference_sites"
+        exit 1
+    fi
+    
+    run_local \
+        --samplesheet "$samplesheet" \
+        --frags-dir "$frags_dir" \
+        --target-sites "$target_sites" \
+        --reference-sites "$reference_sites" \
+        --output-dir "$output_dir" \
+        --verbose \
+        "$@"
+    
+    print_success "Batch analysis with reference normalization completed"
+}
+
+# Function to run batch analysis locally without reference sites
+run_batch_local_without_ref() {
+    print_header "Running batch analysis locally without reference site normalization..."
+    
+    local samplesheet="${SAMPLESHEET:-$DEFAULT_SAMPLESHEET}"
+    local frags_dir="${FRAGS_DIR:-$DEFAULT_FRAGS_DIR}"
+    local target_sites="${TARGET_SITES:-$DEFAULT_TARGET_SITES}"
+    local output_dir="${OUTPUT_DIR:-$DEFAULT_OUTPUT_DIR}"
+    
+    # Check required files
+    if [ ! -f "$samplesheet" ]; then
+        print_error "Samplesheet not found: $samplesheet"
+        exit 1
+    fi
+    
+    if [ ! -f "$target_sites" ]; then
+        print_error "Target sites not found: $target_sites"
+        exit 1
+    fi
+    
+    run_local \
+        --samplesheet "$samplesheet" \
+        --frags-dir "$frags_dir" \
+        --target-sites "$target_sites" \
+        --output-dir "$output_dir" \
+        --verbose \
+        "$@"
+    
+    print_success "Batch analysis without reference normalization completed"
+}
+
+# Function to run batch analysis locally with all chromosomes
+run_batch_local_all_chr() {
+    print_header "Running batch analysis locally including all chromosomes..."
+    
+    local samplesheet="${SAMPLESHEET:-$DEFAULT_SAMPLESHEET}"
+    local frags_dir="${FRAGS_DIR:-$DEFAULT_FRAGS_DIR}"
+    local target_sites="${TARGET_SITES:-$DEFAULT_TARGET_SITES}"
+    local reference_sites="${REFERENCE_SITES:-$DEFAULT_REFERENCE_SITES}"
+    local output_dir="${OUTPUT_DIR:-$DEFAULT_OUTPUT_DIR}"
+    
+    # Check required files
+    if [ ! -f "$samplesheet" ]; then
+        print_error "Samplesheet not found: $samplesheet"
+        exit 1
+    fi
+    
+    if [ ! -f "$target_sites" ]; then
+        print_error "Target sites not found: $target_sites"
+        exit 1
+    fi
+    
+    run_local \
+        --samplesheet "$samplesheet" \
+        --frags-dir "$frags_dir" \
+        --target-sites "$target_sites" \
+        --reference-sites "$reference_sites" \
+        --output-dir "$output_dir" \
+        --include-all-chr \
+        --verbose \
+        "$@"
+    
+    print_success "Batch analysis with all chromosomes completed"
+}
+
 # Function to run batch analysis with reference sites
 run_batch_with_ref() {
     print_header "Running batch analysis with reference site normalization..."
@@ -627,6 +740,124 @@ run_single_local() {
         "$@"
     
     print_success "Single sample analysis completed"
+}
+
+# Function to run single sample analysis locally with reference sites
+run_single_local_with_ref() {
+    print_header "Running single sample analysis locally with reference site normalization..."
+    
+    local sample_name="${SAMPLE_NAME}"
+    local fragment_file="${FRAGMENT_FILE}"
+    local target_sites="${TARGET_SITES:-$DEFAULT_TARGET_SITES}"
+    local reference_sites="${REFERENCE_SITES:-$DEFAULT_REFERENCE_SITES}"
+    local output_dir="${OUTPUT_DIR:-$DEFAULT_OUTPUT_DIR}"
+    
+    # Check required parameters
+    if [ -z "$sample_name" ]; then
+        print_error "Sample name not provided. Use --sample-name or set SAMPLE_NAME environment variable"
+        exit 1
+    fi
+    
+    if [ -z "$fragment_file" ]; then
+        print_error "Fragment file not provided. Use --fragment-file or set FRAGMENT_FILE environment variable"
+        exit 1
+    fi
+    
+    if [ ! -f "$target_sites" ]; then
+        print_error "Target sites not found: $target_sites"
+        exit 1
+    fi
+    
+    if [ ! -f "$reference_sites" ]; then
+        print_error "Reference sites not found: $reference_sites"
+        exit 1
+    fi
+    
+    run_local \
+        --sample-name "$sample_name" \
+        --fragment-file "$fragment_file" \
+        --target-sites "$target_sites" \
+        --reference-sites "$reference_sites" \
+        --output-dir "$output_dir" \
+        --verbose \
+        "$@"
+    
+    print_success "Single sample analysis with reference normalization completed"
+}
+
+# Function to run single sample analysis locally without reference sites
+run_single_local_without_ref() {
+    print_header "Running single sample analysis locally without reference site normalization..."
+    
+    local sample_name="${SAMPLE_NAME}"
+    local fragment_file="${FRAGMENT_FILE}"
+    local target_sites="${TARGET_SITES:-$DEFAULT_TARGET_SITES}"
+    local output_dir="${OUTPUT_DIR:-$DEFAULT_OUTPUT_DIR}"
+    
+    # Check required parameters
+    if [ -z "$sample_name" ]; then
+        print_error "Sample name not provided. Use --sample-name or set SAMPLE_NAME environment variable"
+        exit 1
+    fi
+    
+    if [ -z "$fragment_file" ]; then
+        print_error "Fragment file not provided. Use --fragment-file or set FRAGMENT_FILE environment variable"
+        exit 1
+    fi
+    
+    if [ ! -f "$target_sites" ]; then
+        print_error "Target sites not found: $target_sites"
+        exit 1
+    fi
+    
+    run_local \
+        --sample-name "$sample_name" \
+        --fragment-file "$fragment_file" \
+        --target-sites "$target_sites" \
+        --output-dir "$output_dir" \
+        --verbose \
+        "$@"
+    
+    print_success "Single sample analysis without reference normalization completed"
+}
+
+# Function to run single sample analysis locally with all chromosomes
+run_single_local_all_chr() {
+    print_header "Running single sample analysis locally including all chromosomes..."
+    
+    local sample_name="${SAMPLE_NAME}"
+    local fragment_file="${FRAGMENT_FILE}"
+    local target_sites="${TARGET_SITES:-$DEFAULT_TARGET_SITES}"
+    local reference_sites="${REFERENCE_SITES:-$DEFAULT_REFERENCE_SITES}"
+    local output_dir="${OUTPUT_DIR:-$DEFAULT_OUTPUT_DIR}"
+    
+    # Check required parameters
+    if [ -z "$sample_name" ]; then
+        print_error "Sample name not provided. Use --sample-name or set SAMPLE_NAME environment variable"
+        exit 1
+    fi
+    
+    if [ -z "$fragment_file" ]; then
+        print_error "Fragment file not provided. Use --fragment-file or set FRAGMENT_FILE environment variable"
+        exit 1
+    fi
+    
+    if [ ! -f "$target_sites" ]; then
+        print_error "Target sites not found: $target_sites"
+        exit 1
+    fi
+    
+    run_local \
+        --sample-name "$sample_name" \
+        --fragment-file "$fragment_file" \
+        --target-sites "$target_sites" \
+        --reference-sites "$reference_sites" \
+        --output-dir "$output_dir" \
+        --include-all-chr \
+        --verbose \
+        "$@"
+    
+    print_success "Single sample analysis with all chromosomes completed"
 }
 
 # Function to run single sample analysis with reference sites
@@ -833,6 +1064,21 @@ case "${1:-help}" in
         parse_env_args "$@"
         run_batch_local
         ;;
+    run-batch-local-with-ref)
+        shift
+        parse_env_args "$@"
+        run_batch_local_with_ref
+        ;;
+    run-batch-local-without-ref)
+        shift
+        parse_env_args "$@"
+        run_batch_local_without_ref
+        ;;
+    run-batch-local-all-chr)
+        shift
+        parse_env_args "$@"
+        run_batch_local_all_chr
+        ;;
     run-batch-with-ref)
         shift
         parse_env_args "$@"
@@ -857,6 +1103,21 @@ case "${1:-help}" in
         shift
         parse_env_args "$@"
         run_single_local
+        ;;
+    run-single-local-with-ref)
+        shift
+        parse_env_args "$@"
+        run_single_local_with_ref
+        ;;
+    run-single-local-without-ref)
+        shift
+        parse_env_args "$@"
+        run_single_local_without_ref
+        ;;
+    run-single-local-all-chr)
+        shift
+        parse_env_args "$@"
+        run_single_local_all_chr
         ;;
     run-single-with-ref)
         shift
