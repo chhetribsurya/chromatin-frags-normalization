@@ -558,7 +558,9 @@ count_fragments_at_sites <- function(site_ranges, fragment_files, output_dir,
             log_message(paste("  Retained", length(fragment_ranges), "fragments after chromosome filtering"), verbose)
             
             # Count overlaps with sites (no fragment collapsing)
-            overlap_counts <- countOverlaps(site_ranges, fragment_ranges)
+            suppressWarnings({
+                overlap_counts <- countOverlaps(site_ranges, fragment_ranges)
+            })
             
             # Store counts in matrix
             fragment_count_matrix[, i] <- overlap_counts
