@@ -26,4 +26,5 @@ RUN chmod +x /workspace/chromatin_count_norm_v2.R
 RUN mkdir -p /workspace/input /workspace/output /workspace/frags
 
 # Set the default command
-ENTRYPOINT ["Rscript", "/workspace/chromatin_count_norm_v2.R"]
+#ENTRYPOINT ["Rscript", "/workspace/chromatin_count_norm_v2.R"]
+CMD ["Rscript", "/workspace/chromatin_count_norm_v2.R"]
